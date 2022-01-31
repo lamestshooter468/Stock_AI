@@ -1,0 +1,33 @@
+{% extends "adminMain.html" %}
+{% set active_page = "Admin News" %}
+
+{% block title %}News{% endblock %}
+
+{% block content %}
+<!-- Put your html codes here! -->
+<div class="p-3 mr-3 text-light float-right">
+    <form action="/admin/refreshNews" method="post">
+        <button type="submit" class="btn btn-light">Refresh</button>
+    </form>
+</div>
+<div class="container p-3 my-5 text-light">
+    <h1>News on cryptocurrency</h1>
+</div>
+
+<div class="row m-5 text-light">
+{%for article in articles %}
+<div class="col-4 mb-5" style="height: 400px;">
+    <div class="border-light border rounded mx-3 p-4" style="width: inherit;height: inherit;">
+        <form target="_blank" action={{  article["url"] }}>
+            <button type="submit" class="btn btn-outline-light float-right">View More</button>
+        </form>
+        <p style="height:45px;">{{ article["publishedAt"][8:10] }} {{ article["publishedAt"][5:7]|month_name }}&nbsp&nbsp {{ article["publishedAt"]|timeAgo }} ago</p>
+        <h4 style="height: 60px;overflow-x: auto;overflow-y: auto;">{{article["title"]}}</h4>
+        <p class="my-4" style="height: 120px;overflow-y: auto;">{{article["content"]}}</p>
+        <hr style="background-color: white;">
+        <p class="text-center">Predicted impact:<br><b>{{article["predictedImpact"]}}</b> </p>
+    </div>
+</div>
+{%endfor%}
+</div>
+{% endblock %}

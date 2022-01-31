@@ -1,6 +1,17 @@
 {% extends "main.html" %}
+{% set active_page = "Home" %}
+
 {% block title %}Stock Prediction{% endblock %}
 
 {% block content %}
-    <!-- Put your html codes here! -->
+<!-- Put your html codes here! -->
+<div class="container p-3 my-5 text-light">
+    <h1>The Best Stock<br>Forecast Website</h1><br>
+    <p>Use Historical Data to Get a Better<br>View of the Stock Market</p>
+    <br><br>
+    <form action="/ourService">
+        <button type="submit" class="btn btn-outline-light">Learn More</button>
+    </form>
+</div>
+    
 {% endblock %}
