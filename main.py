@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for  # , request          <----  uncomment to request for method below
+from flask import Flask, render_template, redirect, url_for, request, session    
 from newsapi import NewsApiClient
 import requests
 import os
@@ -10,6 +10,7 @@ from datetime import datetime, timezone
 import config
 
 app = Flask(__name__)
+app.secret_key = "AI STOCK PROJECT"
 
 @app.route('/', methods=["GET"])
 def home():
@@ -46,39 +47,69 @@ def viewStock():
 api_key = os.getenv("NEWS_API")
 newsapi = NewsApiClient(api_key=config.api_key)
 
+@app.route('/admin', methods=["GET"])
+def adminLogin():
+    if session.get("admin"):
+        return redirect(url_for('adminNews'))
+    return render_template('adminLogin.html')
+
+
+@app.route('/admin/check', methods=["POST"])
+def adminLoginCheck():
+    data = request.form
+    print(data)
+    if data["username"] == "admin" and data["password"] == "123":
+        session["admin"] = True
+        return redirect(url_for('adminNews'))
+    else:
+        return redirect(url_for('adminLogin'))
+
+@app.route('/admin/logout', methods=["POST","GET"])
+def adminLogout():
+    session["admin"] = False
+    return redirect(url_for('home'))
+
+
+
 @app.route('/admin/news', methods=["GET"])
 def adminNews():
-    try:
-        db = shelve.open('articles.db', "r")
-        articles = db["articles"]
-        db.close()
-    except:
-        articles = {}
-    return render_template('adminNews.html',articles=articles)
+    if session.get("admin"):
+        try:
+            db = shelve.open('articles.db', "r")
+            articles = db["articles"]
+            db.close()
+        except:
+            articles = {}
+        return render_template('adminNews.html',articles=articles)
+    else:
+        return redirect(url_for('adminLogin'))
 
 @app.route('/admin/refreshNews', methods=["POST"])
 def adminRefreshNews():
+    if session.get("admin"):
+        btc_articles = newsapi.get_everything(q='bitcoin',
+                                        language='en',
+                                        sort_by='publishedAt',
+                                        page=1)
+        articles = btc_articles["articles"]
+        for article in articles:
+            del article["author"]
+            del article["description"]
+            del article["source"]
+            del article["urlToImage"]
+            text = requests.post("http://127.0.0.1:3000/predict", json = {"text": article["title"]}).text.replace("'",'"')
+            data = json.loads(text)
+            predictedImpact = data["predicted"] + " (Confidence: "+ "{:.2f}".format((data["confidence"]*100)) + "%)"
+            article["predictedImpact"] = predictedImpact
 
-    btc_articles = newsapi.get_everything(q='bitcoin',
-                                      language='en',
-                                      sort_by='publishedAt',
-                                      page=1)
-    articles = btc_articles["articles"]
-    for article in articles:
-        del article["author"]
-        del article["description"]
-        del article["source"]
-        del article["urlToImage"]
-        text = requests.post("http://127.0.0.1:3000/predict", json = {"text": article["title"]}).text.replace("'",'"')
-        data = json.loads(text)
-        predictedImpact = data["predicted"] + " (Confidence: "+ "{:.2f}".format((data["confidence"]*100)) + "%)"
-        article["predictedImpact"] = predictedImpact
+        db = shelve.open('articles.db', "c")
+        db["articles"] = articles
+        db.close()
 
-    db = shelve.open('articles.db', "c")
-    db["articles"] = articles
-    db.close()
+        return redirect(url_for('adminNews'))
+    else:
+        return redirect(url_for('adminLogin'))
 
-    return redirect(url_for('adminNews'))
 
 #-------------------------template_filter----------------------
 @app.template_filter()

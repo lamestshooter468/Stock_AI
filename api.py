@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request   
+from flask import Flask, request   
 import gensim
 import tensorflow as tf
 import nltk
