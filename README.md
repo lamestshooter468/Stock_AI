@@ -15,4 +15,4 @@ Navbar can be removed if not needed.
 
 Home.html is the homepage. Edit homepage there.
 
-css scripts can be editted in static/css/main.css3
+css scripts can be editted in static/css/main.css
