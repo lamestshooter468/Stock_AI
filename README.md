@@ -6,6 +6,7 @@ Required packages (May be subject to change):
 2) Tensorflow
 3) Keras
 4) numpy
+5) pickle
 
 run main.py to start up the webpage
 add more pages in main.py
@@ -15,4 +16,4 @@ Navbar can be removed if not needed.
 
 Home.html is the homepage. Edit homepage there.
 
-css scripts can be editted in static/css/main.css3
+css scripts can be editted in static/css/main.css
