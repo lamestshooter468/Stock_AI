@@ -1,6 +1,6 @@
 /* add your css contents here! */
 body{
-    background-image: url('/static/background.jpg');
+    background-image: url('/static/Images/background.jpg');
     background-repeat: repeat-y;
     background-size: cover;
 }
