@@ -7,7 +7,6 @@ import json
 import calendar
 from datetime import datetime, timezone
 import numpy as np
-from sklearn.preprocessing import MinMaxScaler
 import models.loadmodels as loadmodels
 
 import config
@@ -165,7 +164,6 @@ def viewLSTM():
     preds = []
 
     for i in range(5):
-        test_temp = []
         test_temp = [test[0][i:i + 5]]
         test_temp = np.array(test_temp)
         test_temp = np.reshape(test_temp, (test_temp.shape[0], test_temp.shape[1], -1))
@@ -179,9 +177,6 @@ def viewLSTM():
     print(test)
     return render_template("viewLSTM.html", values=test, labels=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
 
-
-if __name__ == '__main__':
-    app.run(debug=True)
 
 if __name__ == '__main__':
     app.run(debug=True)
