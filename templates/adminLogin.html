@@ -13,6 +13,9 @@
           <div class="leading-loose">
             <form class="max-w-sm m-4 p-10 bg-white bg-opacity-25 rounded shadow-xl" action="/admin/check" method="post">
                 <p class="text-white font-medium text-center text-lg font-bold">ADMIN LOGIN</p>
+                {% if wrongPassword %}
+                <div class="text-center" style="color:red">Wrong username or password</div>
+                {% endif %}
                   <div class="">
                     <label class="block text-sm text-white" for="email">Username</label>
                     <input class="w-full px-5 py-1 text-gray-700 bg-gray-300 rounded focus:outline-none focus:bg-white" type="text" id="username"  placeholder="Enter Username" name="username" required>

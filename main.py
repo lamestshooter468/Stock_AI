@@ -51,7 +51,8 @@ newsapi = NewsApiClient(api_key=config.api_key)
 def adminLogin():
     if session.get("admin"):
         return redirect(url_for('adminNews'))
-    return render_template('adminLogin.html')
+    wrongPassword = request.args.get('wrongPassword')
+    return render_template('adminLogin.html',wrongPassword=wrongPassword)
 
 
 @app.route('/admin/check', methods=["POST"])
@@ -62,7 +63,7 @@ def adminLoginCheck():
         session["admin"] = True
         return redirect(url_for('adminNews'))
     else:
-        return redirect(url_for('adminLogin'))
+        return redirect(url_for('adminLogin', wrongPassword=True))
 
 @app.route('/admin/logout', methods=["POST","GET"])
 def adminLogout():
@@ -119,6 +120,8 @@ def month_name(month_number):
 @app.template_filter()
 def timeAgo(datetimestring):
     difference = datetime.now(timezone.utc) - datetime.fromisoformat(datetimestring[:-1] + '+00:00')
+    if difference.days > 0:
+        return str(difference.days) + " day"
     differentInMinutes = difference.seconds // 60
     if differentInMinutes < 60:
         return str(differentInMinutes) + " min"
