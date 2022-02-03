@@ -1,0 +1,63 @@
+{% extends "main.html" %}
+{% set active_page = "View Flair News" %}
+
+{% block title %}News{% endblock %}
+
+{% block content %}
+<!-- Put your html codes here! -->
+<div class="container p-3 my-5 text-light">
+    <h1>News on cryptocurrency</h1>
+</div>
+<script>
+function predictInput(){
+    var data = {
+        "text": document.getElementById("inputHeadline").value
+    };
+    jQuery.ajax({
+        type: 'POST',
+        url: 'http://cyronix.asuscomm.com:5000/predict_Flair',
+        data: JSON.stringify(data),
+        contentType: 'application/json',
+        success: function(data) {
+            
+            document.getElementById("predictedImpact").innerText = data["sentiment"] + " (Score: "+(data["score"]*100).toFixed(2) + "%)";
+            $('#inputHeadline').val("");
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            document.getElementById("predictedImpact").innerText = "Error Orcurred";
+        }
+    })
+}
+</script>
+<div class="m-5">
+    <div class="input-group" style="width:90%;margin:auto;">
+        <input type="text" id="inputHeadline" class="form-control" placeholder="Input headline">
+        <div class="input-group-append">
+            <button class="btn btn-secondary" type="button" onclick="predictInput();">
+            <i>Predict</i>
+            </button>
+        </div>
+    </div>
+    <div class="col text-light text-center mt-2">
+        <p>Predicted impact: <b id="predictedImpact">---------</b></p>
+    </div>
+</div>
+    
+<div class="row m-5 text-light">
+    {%for result in results %}
+    <div class="col-4 mb-5" style="height: 400px;">
+        <div class="border-light border rounded mx-3 p-4" style="width: inherit;height: inherit;">
+            <form target="_blank" action={{  result[3] }}>
+                <button type="submit" class="btn btn-outline-light float-right">View More</button>
+            </form>
+            <p style="height:45px;">{{ result[4][8:10] }} {{ result[4][5:7]|month_name }}&nbsp&nbsp {{ result[4]|timeAgo }} ago</p>
+            <h4 style="height: 60px;overflow-x: auto;overflow-y: auto;">{{result[1]}}</h4>
+            <p class="my-4" style="height: 120px;overflow-y: auto;">{{result[5]}}</p>
+            <hr style="background-color: white;">
+            <p class="text-center">Predicted impact:<br><b>{{result[7]}} {{result[8]}}</b> </p>
+        </div>
+    </div>
+    {%endfor%}
+</div>
+
+{% endblock %}

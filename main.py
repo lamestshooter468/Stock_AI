@@ -1,5 +1,22 @@
-from flask import Flask, render_template, redirect, url_for, request, session
-from newsapi import NewsApiClient
+import datetime
+from importlib.metadata import metadata
+from multiprocessing import connection
+from time import strftime
+from flask import Flask, jsonify, render_template,redirect, url_for, request, session
+from flask_sqlalchemy import SQLAlchemy
+from newsapi.newsapi_client import NewsApiClient
+from dateutil.relativedelta import relativedelta
+import pandas as pd
+import ctypes
+from sklearn import semi_supervised  # An included library with Python install. 
+import sqlalchemy as db
+from flair.models import TextClassifier
+from flair.data import Sentence
+app = Flask(__name__)
+engine = db.create_engine('mysql://admin:eu866WCm6ipb@112.199.252.164:3306/ai_project')
+connection = engine.connect()
+metadata = db.MetaData()
+news_table = db.Table('tbl_news', metadata, autoload=True, autoload_with=engine)
 import requests
 import os
 import shelve
@@ -7,6 +24,7 @@ import json
 import calendar
 from datetime import datetime, timezone
 import numpy as np
+from sklearn.preprocessing import MinMaxScaler
 import models.loadmodels as loadmodels
 
 import config
@@ -154,7 +172,60 @@ def viewStock():
     # preds = scaler.inverse_transform(test)
     return render_template('viewStock.html', values=test, max=200, labels=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
 
+@app.route('/admin_addNews', methods = ['POST', 'GET'])
+def admin_addNews():
+   
+    return render_template('admin_addNews.html')
+#background process happening without any refreshing
+@app.route('/background_process_test')
+def background_process_test():
+     # Init
+    newsapi = NewsApiClient(api_key='4d0eb542e2ca44a9af95172bad7d0221')
+    # /v2/everything
+    today_date = datetime.today().strftime('%Y-%m-%d')
+    three_months = datetime.today() + relativedelta(months=-1)
+    for page in range(1,2):
+        all_articles = newsapi.get_everything(q='bitcoin',
+                                        
+                                        from_param=three_months,
+                                        to=today_date,
+                                        language='en',
+                                        sort_by='relevancy',
+                                        
+                                        page=page)
+        print(all_articles['articles'][0]['title'])
+        df = pd.DataFrame(columns = ['Title', 'Author','Description','Url','PublishedAt','Content'])
+        
+        for i in range(len(all_articles['articles'])):
+            
+            title = all_articles['articles'][i]['title']
 
+            author = all_articles['articles'][i]['author']
+            description = all_articles['articles'][i]['description']
+            url = all_articles['articles'][i]['url']
+            publishedAt = all_articles['articles'][i]['publishedAt']
+            
+            content = all_articles['articles'][i]['content']
+            
+            #OurNewDateFormat =  datetime.datetime.strptime  (publishedAt, '%Y-%m-%dT%H:%M:%SZ')
+            #new_date = datetime.date.strftime(OurNewDateFormat,'%Y-%m-%d')
+            #print(new_date)
+            classifier = TextClassifier.load('sentiment')
+            sentence = Sentence(description)
+            classifier.predict(sentence)
+
+            values_list = [{'news_title':title,'news_description':description,'news_url':url,'publishedAt':publishedAt,'news_content':content,'news_author':author,'news_sentiment':sentence.labels[0].value,'news_score':sentence.labels[0].score }]
+            query = db.insert(news_table)
+            ResultProxy = connection.execute(query,values_list)
+
+
+    #print(news_table.columns.keys())
+    results = connection.execute(db.select([news_table])).fetchall()
+    df = pd.DataFrame(results)
+    
+    #df.columns = results[0].keys()
+    #df.head(4)
+    return "Prediction Completed"
 @app.route('/viewLSTM', methods=["GET"])
 def viewLSTM():
     model = loadmodels.LSTMModel()
@@ -178,5 +249,24 @@ def viewLSTM():
     return render_template("viewLSTM.html", values=test, labels=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
 
 
+@app.route('/viewFlairNews')
+def viewFlairNews():
+
+    results = connection.execute(db.select([news_table])).fetchall()
+    
+    return render_template('viewFlairNews.html',results=results)
+
+@app.route('/predict_Flair', methods = ['POST', 'GET'])
+def predict_Flair():
+    input = request.json['text']
+    print(input)
+
+    classifier = TextClassifier.load('sentiment')
+    sentence = Sentence(input)
+    classifier.predict(sentence)
+    
+    data = {'sentiment': sentence.labels[0].value,'score':sentence.labels[0].score}
+    return jsonify(data)
 if __name__ == '__main__':
-    app.run(debug=True)
+    
+    app.run(host='0.0.0.0',debug = True)

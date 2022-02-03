@@ -1,0 +1,32 @@
+{% extends "main.html" %}
+{% set active_page = "admin_addNews" %}
+
+{% block title %}Add News{% endblock %}
+
+{% block content %}
+<!-- Put your html codes here! -->
+
+<div class="container p-3 my-5 text-light">
+    
+</div>
+<form method="POST">
+
+
+<div class="container news-container border-active border-solid border-height">
+    <div class="text-center">
+    <button class="btn_clear" type="submit"><h3 class="text-light text-center">Add News And Predict Sentiment</h3></button>
+</div>
+</div>
+</form>
+<script type=text/javascript>
+    $(function() {
+      $('.btn_clear').on('click', function(e) {
+        e.preventDefault();
+        $.ajax('/background_process_test', function(data) {
+          //do nothing
+        });
+        return false;
+      });
+    });
+</script>
+{% endblock %}
