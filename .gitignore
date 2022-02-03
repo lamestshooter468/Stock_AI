@@ -1,0 +1,5 @@
+config.py
+articles.db.bak
+articles.db.dat
+articles.db.dir
+__pycache__/main.cpython-37.pyc
