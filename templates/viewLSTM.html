@@ -1,0 +1,48 @@
+{% extends "main.html" %}
+
+{% block title %}Price Prediction by LSTM{% endblock %}
+
+{% block content %}
+<div>
+    <div class="container-fluid text-light">
+        Forecast
+    </div>
+    <div class="container-fluid text-light">
+        Charts
+        <canvas id="Stock_chart_ZY" width="400" height="400"></canvas>
+        <script>
+        const mychart = document.getElementById("Stock_chart_ZY").getContext("2d");
+        var LineChartDemo = new Chart(mychart, {
+            type: "line",
+            data: {
+                labels: {{ labels | safe }},
+                datasets: [
+                    {
+                    label: "BitCoin Price Current",
+                    data: [{% for item in values[0][0:5] %}
+                        {{ item[0] }},
+                    {% endfor %}],
+                    borderColor: "rgb(75, 192, 192)",
+                    lineTension: 0.1
+                    },
+                    {
+                    label: "BitCoin Price Prediction",
+                    data: [NaN, NaN, NaN, NaN, {% for item in (values[0][4::]) %}
+                        {{ item[0] }},
+                    {% endfor %}],
+                    borderColor: "rgb(255, 192, 203)",
+                    lineTension: 0.1
+                    }
+                ]
+            },
+            options: {
+                responsive: false,
+                tooltips: {
+                    mode: 'index'
+                }
+            }
+        })
+        </script>
+    </div>
+</div>
+{% endblock %}
