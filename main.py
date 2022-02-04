@@ -41,10 +41,12 @@ def viewNews():
     try:
         db = shelve.open('articles.db', "r")
         articles = db["articles"]
+        articlesRelevancy = db["articlesRelevancy"]
         db.close()
     except:
         articles = {}
-    return render_template('viewNews.html',articles=articles)
+        articlesRelevancy = {}
+    return render_template('viewNews.html',articles=articles, articlesRelevancy=articlesRelevancy)
 
 # -----------------admin----------------
 api_key = os.getenv("NEWS_API")
@@ -81,10 +83,12 @@ def adminNews():
         try:
             db = shelve.open('articles.db', "r")
             articles = db["articles"]
+            articlesRelevancy = db["articlesRelevancy"]
             db.close()
         except:
             articles = {}
-        return render_template('adminNews.html',articles=articles)
+            articlesRelevancy = {}
+        return render_template('adminNews.html',articles=articles, articlesRelevancy=articlesRelevancy)
     else:
         return redirect(url_for('adminLogin'))
 
@@ -108,6 +112,25 @@ def adminRefreshNews():
 
         db = shelve.open('articles.db', "c")
         db["articles"] = articles
+        db.close()
+
+        btc_articlesByRelevany = newsapi.get_everything(q='bitcoin',
+                                        language='en',
+                                        sort_by='relevancy',
+                                        page=1)
+        articlesByRelevany = btc_articlesByRelevany["articles"]
+        for article in articlesByRelevany:
+            del article["author"]
+            del article["description"]
+            del article["source"]
+            del article["urlToImage"]
+            text = requests.post("http://127.0.0.1:3000/predict", json = {"text": article["title"]}).text.replace("'",'"')
+            data = json.loads(text)
+            predictedImpact = data["predicted"] + " (Confidence: "+ "{:.2f}".format((data["confidence"]*100)) + "%)"
+            article["predictedImpact"] = predictedImpact
+
+        db = shelve.open('articles.db', "c")
+        db["articlesRelevancy"] = articlesByRelevany
         db.close()
 
         return redirect(url_for('adminNews'))
