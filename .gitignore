@@ -2,4 +2,7 @@ config.py
 articles.db.bak
 articles.db.dat
 articles.db.dir
+best-model.pt
+final-model.pt
 __pycache__/main.cpython-37.pyc
+
