@@ -5,6 +5,11 @@
 
 {% block content %}
 <!-- Put your html codes here! -->
+<div class="p-3 mr-3 text-light float-right">
+    <form action="/admin/refreshNews" method="post">
+        <button type="submit" class="btn btn-outline-info">Swap to Sentiment Analysis</button>
+    </form>
+</div>
 <div class="container p-3 my-5 text-light">
     <h1>News on cryptocurrency</h1>
 </div>
@@ -28,6 +33,7 @@ function predictInput(){
     })
 }
 </script>
+
 <div class="m-5">
     <div class="input-group" style="width:90%;margin:auto;">
         <input type="text" id="inputHeadline" class="form-control" placeholder="Input headline">
