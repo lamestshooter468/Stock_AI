@@ -6,7 +6,13 @@ Required packages (May be subject to change):
 2) Tensorflow
 3) Keras
 4) numpy
-5) pickle
+5) pickle (if below python 3.8)
+6) flair, importlib
+7) flask_sqlalchemy, sqlalchemy
+8) newsapi-python
+9) sklearn
+10) pandas, pandas_datareader
+11) mysql
 
 run main.py to start up the webpage
 add more pages in main.py
