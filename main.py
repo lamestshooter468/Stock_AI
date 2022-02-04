@@ -1,5 +1,5 @@
 import datetime
-from importlib.metadata import metadata
+from importlib_metadata import metadata
 from multiprocessing import connection
 from time import strftime
 from flask import Flask, jsonify, render_template, redirect, url_for, request, session
@@ -134,6 +134,10 @@ def adminRefreshNews():
     else:
         return redirect(url_for('adminLogin'))
 
+@app.route('/admin_addNews', methods=['POST', 'GET'])
+def admin_addNews():
+    return render_template('admin_addNews.html')
+
 
 # -------------------------template_filter----------------------
 @app.template_filter()
@@ -151,43 +155,7 @@ def timeAgo(datetimestring):
         return str(differentInMinutes) + " min"
     return str(differentInMinutes // 60) + " hour"
 
-
-# ------------------Stock---------------------
-
-@app.route('/viewStock', methods=["GET"])
-def viewStock():
-    results = connection.execute(db.select([stock_table])).fetchall()
-
-    # scaler = MinMaxScaler(feature_range=(0, 1)
-    # scaled_data = scaler.fit_transform([result[1] for result in results].reshape(-1, 1))
-
-    labels = [str(result[0]) for result in results]
-    labels = labels + [str(datetime.strftime((datetime.today() + relativedelta(days=i)), '%Y-%m-%d')) for i in range(0, 5)]
-
-    model = loadmodels.load_arima()
-
-    test = []
-    test.append([result[1] for result in results])
-    # test.append([data for data in scaled_data])
-    test = np.array(test)
-    preds = []
-
-    for i in range(5):
-        t_forecast = []
-        t_forecast.append(model.predict(n_periods=len([test[0][i:i + 5]]), X=[test[0][i:i + 5]]))
-        t_forecast = np.array(t_forecast)
-        test = np.concatenate((test, np.array(t_forecast)), axis=1)
-        preds.append(t_forecast[0])
-    # preds = scaler.inverse_transform(preds)
-    # preds = scaler.inverse_transform(test)
-    results = connection.execute(db.select([stock_table])).fetchall()
-    return render_template('viewStock.html', values=test, max=200, labels=labels)
-
-
-@app.route('/admin_addNews', methods=['POST', 'GET'])
-def admin_addNews():
-    return render_template('admin_addNews.html')
-
+# ------------------API reqs---------------------
 
 # background process happening without any refreshing
 @app.route('/background_process_test')
@@ -252,27 +220,75 @@ def background_process_test():
     return "Prediction Completed"
 
 
-@app.route('/viewLSTM', methods=["GET"])
-def viewLSTM():
-    model = loadmodels.LSTMModel()
+# ------------------Stock---------------------
+
+@app.route('/viewStock', methods=["GET"])
+def viewStock():
+    results = connection.execute(db.select([stock_table])).fetchall()
+
+    # scaler = MinMaxScaler(feature_range=(0, 1)
+    # scaled_data = scaler.fit_transform([result[1] for result in results].reshape(-1, 1))
+
+    labels = [str(result[0]) for result in results]
+    labels = labels + [str(datetime.strftime((datetime.today() + relativedelta(days=i)), '%Y-%m-%d')) for i in range(0, 5)]
+
+    model = loadmodels.load_arima()
 
     test = []
-    test.append([[0.71482802], [0.71745348], [0.66760452], [0.66274593], [0.61612082]])
+    test.append([result[1] for result in results])
+    # test.append([data for data in scaled_data])
+    test = np.array(test)
     preds = []
 
     for i in range(5):
-        test_temp = [test[0][i:i + 5]]
+        t_forecast = []
+        t_forecast.append(model.predict(n_periods=len([test[0][i:i + 5]]), X=[test[0][i:i + 5]]))
+        t_forecast = np.array(t_forecast)
+        test = np.concatenate((test, np.array(t_forecast)), axis=1)
+        preds.append(t_forecast[0])
+    # preds = scaler.inverse_transform(preds)
+    # preds = scaler.inverse_transform(test)
+    results = connection.execute(db.select([stock_table])).fetchall()
+    return render_template('viewStock.html', values=test, max=200, labels=labels)
+
+
+
+@app.route('/viewLSTM', methods=["GET"])
+def viewLSTM():
+    results = connection.execute(db.select([stock_table])).fetchall()
+    model = loadmodels.LSTMModel()
+
+    labels = [str(result[0]) for result in results]
+    labels = labels + [str(datetime.strftime((datetime.today() + relativedelta(days=i)), '%Y-%m-%d')) for i in range(0, 5)]
+    #print(labels)
+
+    scaler = MinMaxScaler(feature_range=(0, 1))
+    scaled_data = scaler.fit_transform(np.array([result[1] for result in results]).reshape(-1, 1))
+
+    test = [result for result in scaled_data]
+    test=np.array(test)
+    #print(test)
+    #[[0.71482802], [0.71745348], [0.66760452], [0.66274593], [0.61612082]]
+    
+    preds = []
+
+    for i in range(5):
+        test_temp = [test[i:i + 5]]
+        #print(test_temp)
         test_temp = np.array(test_temp)
         test_temp = np.reshape(test_temp, (test_temp.shape[0], test_temp.shape[1], -1))
+        #print(test_temp.shape)
+
         t_forecast = model.predict(test_temp)
         t_forecast = np.array(t_forecast)
-        t_forecast = np.reshape(t_forecast, (t_forecast.shape[0], t_forecast.shape[1], -1))
-        test = np.column_stack((test, t_forecast))
+        #t_forecast = np.reshape(t_forecast, (t_forecast.shape[0], t_forecast.shape[1], -1))
+        #print(test.shape , "\n\n", t_forecast.shape)
+        test = np.r_[test, t_forecast]
         preds.append(t_forecast[0])
     # y_te = scaler.inverse_transform(y_te)
-    # preds = scaler.inverse_transform(preds)
+    test = scaler.inverse_transform(test)
     print(test)
-    return render_template("viewLSTM.html", values=test, labels=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+    return render_template("viewLSTM.html", values=test, max=200, labels=labels)
 
 
 @app.route('/viewFlairNews')

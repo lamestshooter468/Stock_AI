@@ -19,7 +19,7 @@
                 datasets: [
                     {
                     label: "BitCoin Price Current",
-                    data: [{% for item in values[0][0:5] %}
+                    data: [{% for item in values[0:5] %}
                         {{ item[0] }},
                     {% endfor %}],
                     borderColor: "rgb(75, 192, 192)",
@@ -27,7 +27,7 @@
                     },
                     {
                     label: "BitCoin Price Prediction",
-                    data: [NaN, NaN, NaN, NaN, {% for item in (values[0][4::]) %}
+                    data: [NaN, NaN, NaN, NaN, {% for item in (values[4::]) %}
                         {{ item[0] }},
                     {% endfor %}],
                     borderColor: "rgb(255, 192, 203)",
