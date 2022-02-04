@@ -232,7 +232,7 @@ def background_process_test():
             # OurNewDateFormat =  datetime.datetime.strptime  (publishedAt, '%Y-%m-%dT%H:%M:%SZ')
             # new_date = datetime.date.strftime(OurNewDateFormat,'%Y-%m-%d')
             # print(new_date)
-            classifier = TextClassifier.load('sentiment')
+            classifier = TextClassifier.load('final-model.pt')
             sentence = Sentence(description)
             classifier.predict(sentence)
 
@@ -287,7 +287,7 @@ def predict_Flair():
     input = request.json['text']
     print(input)
 
-    classifier = TextClassifier.load('sentiment')
+    classifier = TextClassifier.load('final-model.pt')
     sentence = Sentence(input)
     classifier.predict(sentence)
 
