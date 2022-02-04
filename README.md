@@ -13,6 +13,7 @@ Required packages (May be subject to change):
 9) sklearn
 10) pandas, pandas_datareader
 11) mysql
+12) pmdarima
 
 run main.py to start up the webpage
 add more pages in main.py
