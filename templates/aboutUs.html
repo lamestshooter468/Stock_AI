@@ -40,19 +40,19 @@
     </div>
     <div class="col-4 px-0" style="height: 370px;">
         <div class="border-light border p-4" style="width: inherit;height: inherit;">
-            <div class="container p-3">
+            <form class="container p-3" action="/aboutUs/submitForm" method="post">
                 <h4>Feedback For Us</h4>
                 <div class="form-group">
                     <label for="feedbackHeading">Heading</label>
-                    <input type="text" class="form-control" id="feedbackHeading" placeholder="Enter Feedback Heading">
+                    <input required type="text" class="form-control" id="feedbackHeading" name="feedbackHeading" placeholder="Enter Feedback Heading">
                 </div>
                 <div class="form-group">
                     <label for="feedbackComment">Comment</label>
-                    <textarea class="form-control" id="feedbackComment" aria-describedby="feedbackHelp" placeholder="Enter Feedback"></textarea>
+                    <textarea required class="form-control" id="feedbackComment" name="feedbackComment" aria-describedby="feedbackHelp" placeholder="Enter Feedback"></textarea>
                     <small id="feedbackHelp" class="form-text text-muted">We'll never share your Feedback with anyone else.</small>
                 </div>
-                <button class="btn btn-danger" style="width: 100%;">Submit</button>
-            </div> 
+                <button class="btn btn-danger" type="submit" style="width: 100%;">Submit</button>
+            </form> 
         </div>
     </div>
 </div>
