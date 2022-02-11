@@ -1,4 +1,5 @@
 import datetime
+from urllib import response
 from importlib_metadata import metadata
 from multiprocessing import connection
 from time import strftime
@@ -160,6 +161,50 @@ def adminRefreshNews():
 def admin_addNews():
     return render_template('admin_addNews.html')
 
+
+#---------------------------Feedback----------------------------
+@app.route('/aboutUs/submitForm', methods=["POST"])
+def submitFeedback():
+    try:
+        db = shelve.open('feedback.db', "r")
+        feedbackdb = db["feedback"]
+        db.close()
+    except:
+        feedbackdb = []
+    feedback = {}
+    feedback["feedbackHeading"] = request.form["feedbackHeading"]
+    feedback["feedbackComment"] = request.form["feedbackComment"]
+    feedback["utctime"] = str(datetime.now(timezone.utc).replace(microsecond=0).isoformat())
+    feedbackdb.append(feedback)
+    db = shelve.open('feedback.db', "c")
+    db["feedback"] = feedbackdb
+    db.close()
+
+    return redirect(url_for('aboutUs'))
+
+@app.route('/admin/feedback', methods=["GET"])
+def adminFeedback():
+    if session.get("admin"):
+        try:
+            db = shelve.open('feedback.db', "r")
+            feedbackdb = db["feedback"]
+            db.close()
+        except:
+            feedbackdb = []
+        return render_template('adminFeedback.html',feedbackdb=feedbackdb)
+    else:
+        return redirect(url_for('adminLogin'))
+
+@app.route('/feedback/clearall', methods=["POST"])
+def feedbackClearall():
+    if session.get("admin"):
+        db = shelve.open('feedback.db', "c")
+        db["feedback"] = []
+        db.close()
+
+        return redirect(url_for('adminFeedback'))
+    else:
+        return redirect(url_for('adminLogin'))
 
 # -------------------------template_filter----------------------
 @app.template_filter()
