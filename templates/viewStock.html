@@ -83,9 +83,9 @@
                     document.getElementById("ErrorMsg").style.display = "none";
                     var prefix = ""
                     if (data["result"] > 0){
-                      prefix = "Increased by "
+                      prefix = "Increase: +"
                     } else {
-                      prefix = "Decreased by "
+                      prefix = "Decrease: "
                     }
                     document.getElementById("stonks").innerText = prefix + data["result"] + "%"
                   },

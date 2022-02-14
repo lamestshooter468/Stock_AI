@@ -344,15 +344,20 @@ def viewStock():
 
 
 
-@app.route('/viewLSTM', methods=["GET"])
+@app.route('/viewLSTM', methods=["GET", "POST"])
 def viewLSTM():
+    day = 5
+    try:
+        day = request.json["days"]
+    except:
+        None
     results = connection.execute(db.select([stock_table])).fetchall()
     news_result = connection.execute(db.select([news_table])).fetchall()
 
     model = loadmodels.LSTMModel()
 
     labels = [str(result[0]) for result in results]
-    labels = labels + [str(datetime.strftime((datetime.today() + relativedelta(days=i)), '%Y-%m-%d')) for i in range(0, 5)]
+    labels = labels + [str(datetime.strftime((datetime.today() + relativedelta(days=i)), '%Y-%m-%d')) for i in range(0, day)]
     #print(labels)
 
     scaler = MinMaxScaler(feature_range=(0, 1))
@@ -364,7 +369,7 @@ def viewLSTM():
     
     preds = []
 
-    for i in range(5):
+    for i in range(day):
         test_temp = [test[i:i + 5]]
         #print(test_temp)
         test_temp = np.array(test_temp)
@@ -381,6 +386,12 @@ def viewLSTM():
     test = scaler.inverse_transform(test)
     test = test.tolist()
     result = round((test[-1][0] - test[4][0]) / test[4][0], 3)
+
+    if request.method == "POST":
+        data = {"values": test, "labels": labels, "result": result}
+        data = jsonify(data)
+        data.headers.add("Access-Control-Allow-Origin", '*')
+        return data
 
     return render_template("viewLSTM.html", values=test, max=200, labels=labels, result=result, news_result=news_result)
 
