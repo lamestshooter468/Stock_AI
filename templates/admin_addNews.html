@@ -33,7 +33,20 @@
    
       $('.btn_clear').on('click', function(e) {
         e.preventDefault();
-        alert(document.getElementById("query").value);
+        //alert(document.getElementById("query").value);
+        var diff = Math.floor((Date.parse(document.getElementById("todate").value) - Date.parse(document.getElementById("fromdate").value)) / 86400000);
+        if(diff > 30 )
+        {
+          alert("Date range difference cannot exceed more than 30 days")
+        }
+        else if(diff < 1)
+        {
+          alert("To Date cannot be older then From Date")
+        }
+        else
+        {
+
+        
         var data = {
         "fromdate": document.getElementById("fromdate").value,
         "todate": document.getElementById("todate").value,
@@ -58,6 +71,7 @@
           document.getElementById("lbl_noti").innerText = "Error Orcurred";
         }
     })
+        }
         
         return false;
       });

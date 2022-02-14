@@ -161,7 +161,11 @@ def adminRefreshNews():
 
 @app.route('/admin_addNews', methods=['POST', 'GET'])
 def admin_addNews():
-    return render_template('admin_addNews.html')
+    if session.get("admin"):
+        return render_template('admin_addNews.html')
+    else:
+        return redirect(url_for('adminLogin'))
+    
 
 
 #---------------------------Feedback----------------------------

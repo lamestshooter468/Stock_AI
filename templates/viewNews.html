@@ -5,12 +5,7 @@
 
 {% block content %}
 <!-- Put your html codes here! -->
-<div class="container p-3 my-5 text-light">
-    <h1>News on cryptocurrency</h1>
-    <a style="color: white;" class="active float-right border-light nav-link border rounded" 
-    href="/viewFlairNews">View Flair News</a>
-   
-</div>
+
 
 <script>
 function predictInput(){
@@ -19,7 +14,7 @@ function predictInput(){
     };
     jQuery.ajax({
         type: 'POST',
-        url: 'http://127.0.0.1:3000/predict',
+        url: 'http://cyronix.asuscomm.com:3000/predict',
         data: JSON.stringify(data),
         contentType: 'application/json',
         success: function(data) {
@@ -44,7 +39,7 @@ function sortby(value){
 </script>
 <!-- Put your html codes here! -->
 <div class="p-3 mr-3 text-light float-right">
-    <form action="/viewFlairNews" method="post">
+    <form action="/viewFlairNews" method="get">
         <button type="submit" class="btn btn-outline-info">Swap to Sentiment Analysis</button>
     </form>
 </div>
