@@ -31,7 +31,26 @@ function predictInput(){
         }
     })
 }
+
+function sortby(value){
+    if(value == "Date"){
+        document.getElementById("articlesByDate").style.display = "";
+        document.getElementById("articlesByRelevancy").style.display = "none";
+    } if(value == "Relevancy"){
+        document.getElementById("articlesByDate").style.display = "none";
+        document.getElementById("articlesByRelevancy").style.display = "";
+    }
+}
 </script>
+<!-- Put your html codes here! -->
+<div class="p-3 mr-3 text-light float-right">
+    <form action="/viewFlairNews" method="post">
+        <button type="submit" class="btn btn-outline-info">Swap to Sentiment Analysis</button>
+    </form>
+</div>
+<div class="container p-3 my-5 text-light">
+    <h1>News on cryptocurrency</h1>
+</div>
 <div class="m-5">
     <div class="input-group" style="width:90%;margin:auto;">
         <input type="text" id="inputHeadline" class="form-control" placeholder="Input headline">
@@ -45,10 +64,34 @@ function predictInput(){
         <p>Predicted impact: <b id="predictedImpact">---------</b></p>
     </div>
 </div>
-    
-<div class="row m-5 text-light">
+<div class="dropdown mr-5" style="display: flex; justify-content: right;">
+    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+      Sort By
+    </button>
+    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+      <a class="dropdown-item" onclick="sortby('Date');">Date</a>
+      <a class="dropdown-item" onclick="sortby('Relevancy');">Relevancy</a>
+    </div>
+</div>
+<div class="row m-5 text-light" id="articlesByDate">
     {%for article in articles %}
-    <div class="col-4 mb-5" style="height: 400px;">
+    <div class="col-lg-4 col-md-6 mb-5 col-sm-12" style="height: 400px;">
+        <div class="border-light border rounded mx-3 p-4" style="width: inherit;height: inherit;">
+            <form target="_blank" action={{  article["url"] }}>
+                <button type="submit" class="btn btn-outline-light float-right">View More</button>
+            </form>
+            <p style="height:45px;">{{ article["publishedAt"][8:10] }} {{ article["publishedAt"][5:7]|month_name }}&nbsp&nbsp {{ article["publishedAt"]|timeAgo }} ago</p>
+            <h4 style="height: 60px;overflow-x: auto;overflow-y: auto;">{{article["title"]}}</h4>
+            <p class="my-4" style="height: 120px;overflow-y: auto;">{{article["content"]}}</p>
+            <hr style="background-color: white;">
+            <p class="text-center">Predicted impact:<br><b>{{article["predictedImpact"]}}</b> </p>
+        </div>
+    </div>
+    {%endfor%}
+</div>
+<div class="row m-5 text-light" id="articlesByRelevancy" style="display: none;">
+    {%for article in articlesRelevancy %}
+    <div class="col-lg-4 col-md-6 mb-5 col-sm-12" style="height: 400px;">
         <div class="border-light border rounded mx-3 p-4" style="width: inherit;height: inherit;">
             <form target="_blank" action={{  article["url"] }}>
                 <button type="submit" class="btn btn-outline-light float-right">View More</button>
