@@ -6,6 +6,14 @@
 <div class="container my-5 text-light ">
     <div>
         <h1 style="padding-bottom:10px;">Bitcoin (Long-Short-Term-Memory Forecast) <img src="/static/Images/btc.png" height="50"></h1>
+        <div class="row">
+            <div class="col-1"></div>
+            <div class="col-10 border border-warning text-center" style="background-color:rgba(255, 193, 7, 0.15);">
+                <h6> Disclaimer: The prediction model may take some time to load, it should not take more than a minute to load</h6>
+            </div>
+            <div class="col-1"></div>
+        </div>
+
     </div>
     <div class="row my-3">
         <h4 class="col-9">
@@ -22,10 +30,10 @@
         <div class="card-body">
             <canvas id="Stock_chart_ZY"></canvas>
             <h6 style="display: none" id="ErrorMsg"></h6>
-            <!--<script>
+            <script>
               window.onload = plt_chart;
               function plt_chart(values = {{ values | safe }}, label = {{labels | safe }} ){
-                var mychart = document.getElementById("Stock_chart_alexi").getContext("2d");
+                var mychart = document.getElementById("Stock_chart_ZY").getContext("2d");
                 var LineChartDemo = new Chart(mychart, {
                     type: "line",
                     data: {
@@ -33,8 +41,8 @@
                       datasets: [
                         {
                           label: "BitCoin Price Current",
-                           data: [{% for item in values[0][0:5] %}
-                             {{ item }},
+                           data: [{% for item in values[0:5] %}
+                             {{ item[0] }},
                              {% endfor %}],
                            borderColor: "rgb(75, 192, 192)",
                            lineTension: 0.1,
@@ -42,8 +50,8 @@
                         },
                         {
                           label: "BitCoin Price Prediction",
-                           data: [NaN, NaN, NaN, NaN, {% for item in (values[0][4::]) %}
-                               {{ item }},
+                           data: [NaN, NaN, NaN, NaN, {% for item in (values[4::]) %}
+                               {{ item[0] }},
                            {% endfor %}],
                            borderColor: "rgb(255, 192, 203)",
                            lineTension: 0.1,
@@ -72,7 +80,7 @@
                 };
                 jQuery.ajax({
                   type: 'POST',
-                  url: 'http://127.0.0.1:5000/viewStock',
+                  url: 'http://127.0.0.1:5000/viewLSTM',
                   data: JSON.stringify(data),
                   contentType: 'application/json',
 
@@ -81,20 +89,20 @@
                     document.getElementById("ErrorMsg").style.display = "none";
                     var prefix = ""
                     if (data["result"] > 0){
-                      prefix = "Increased by "
+                      prefix = "Increase: +"
                     } else {
-                      prefix = "Decreased by "
+                      prefix = "Decrease: "
                     }
                     document.getElementById("stonks").innerText = prefix + data["result"] + "%"
                   },
                   error: function (jqXHR, textStatus, errorThrown) {
-                    document.getElementById("ErrorMsg").innerText = "Error Orcurred";
+                    document.getElementById("ErrorMsg").innerText = "Error Occurred";
                     document.getElementById("ErrorMsg").style.display = "true";
                   }
                 })
               })
-            </script>-->
-            <script>
+            </script>
+            <!--<script>
             const mychart = document.getElementById("Stock_chart_ZY").getContext("2d");
             var LineChartDemo = new Chart(mychart, {
                 type: "line",
@@ -126,7 +134,7 @@
                     }
                 }
             })
-            </script>
+            </script>-->
         </div>
     </div>
     <div class="container" style="padding-top:20px;">
