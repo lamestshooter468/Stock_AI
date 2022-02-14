@@ -5,44 +5,135 @@
 
 {% block content %}
 <!-- Put your html codes here! -->
-<div class="container p-3 my-5 text-light">
-    <h1>Stock</h1>
-    <canvas id="Stock_chart_alexi" width="400" height="400"></canvas>
-    <script>
-      var mychart = document.getElementById("Stock_chart_alexi").getContext("2d");
-      var LineChartDemo = new Chart(mychart, {
-          type: "line",
-          data: {
-            labels: {{ labels | safe }},
-            datasets: [
-                {
-                label: "BitCoin Price Current",
-                data: [{% for item in values[0][0:5] %}
-                    {{ item }},
-                {% endfor %}],
-                borderColor: "rgb(75, 192, 192)",
-                lineTension: 0.1
-                },
-                {
-                label: "BitCoin Price Prediction",
-                data: [NaN, NaN, NaN, NaN, {% for item in (values[0][4::]) %}
-                    {{ item }},
-                {% endfor %}],
-                borderColor: "rgb(255, 192, 203)",
-                lineTension: 0.1
+<div class="container my-5 text-light ">
+    <div>
+        <h1 style="padding-bottom:10px;">Bitcoin (Arima Forecast) <img src="/static/Images/btc.png" height="50"></h1>
+    </div>
+    <div class="row my-3">
+        <h4 class="col-9">
+            <label for="period">Prediction Time Frame: </label>
+            <select name="period" class="period">
+                <option value="1 day">1 Day</option>
+                <option value="5 days" selected>5 Days</option>
+                <option value="1 month">1 Month</option>
+            </select>
+        </h4>
+        <button type="submit" class="col-3 btn btn-outline-light" href="../viewLSTM">View Deep Learning Model</button>
+    </div>
+    <div class="card bg-dark">
+        <div class="card-body">
+            <canvas id="Stock_chart_alexi"></canvas>
+            <h6 style="display: none" id="ErrorMsg"></h6>
+            <script>
+              window.onload = plt_chart;
+              function plt_chart(values = {{ values | safe }}, label = {{labels | safe }} ){
+                var mychart = document.getElementById("Stock_chart_alexi").getContext("2d");
+                var LineChartDemo = new Chart(mychart, {
+                    type: "line",
+                    data: {
+                      labels: label,
+                      datasets: [
+                        {
+                          label: "BitCoin Price Current",
+                           data: [{% for item in values[0][0:5] %}
+                             {{ item }},
+                             {% endfor %}],
+                           borderColor: "rgb(75, 192, 192)",
+                           lineTension: 0.1,
+                           backgroundColor: "rgba(230, 230, 230, 0.1)"
+                        },
+                        {
+                          label: "BitCoin Price Prediction",
+                           data: [NaN, NaN, NaN, NaN, {% for item in (values[0][4::]) %}
+                               {{ item }},
+                           {% endfor %}],
+                           borderColor: "rgb(255, 192, 203)",
+                           lineTension: 0.1,
+                           backgroundColor: "rgba(230, 230, 230, 0.1)"
+                       }
+                      ]
+                      },
+                      options: {
+                        responsive: true
+                      }
+                  })
                 }
-             ]
-          },
-          options: {
-            responsive: false
-          }
-      })
-    </script>
-    <p>Predicted Price trend:</p>
-    {% if values[0][9] > values[0][4] %}
-    Increase
-    {% else %}
-    Decrease
-    {% endif %}
+              $('.period').on('change', function(){
+                if (this.value == "1 month"){
+                  var data = {
+                    "days": 30
+                  };
+                } else if (this.value == "1 day"){
+                  var data = {
+                    "days": 1
+                  };
+                } else {
+                  var data = {
+                    "days": 5
+                  };
+                };
+                jQuery.ajax({
+                  type: 'POST',
+                  url: 'http://127.0.0.1:5000/viewStock',
+                  data: JSON.stringify(data),
+                  contentType: 'application/json',
+
+                  success: function(data) {
+                    plt_chart(data["values"], data["labels"]);
+                    document.getElementById("ErrorMsg").style.display = "none";
+                    var prefix = ""
+                    if (data["result"] > 0){
+                      prefix = "Increased by "
+                    } else {
+                      prefix = "Decreased by "
+                    }
+                    document.getElementById("stonks").innerText = prefix + data["result"] + "%"
+                  },
+                  error: function (jqXHR, textStatus, errorThrown) {
+                    document.getElementById("ErrorMsg").innerText = "Error Orcurred";
+                    document.getElementById("ErrorMsg").style.display = "true";
+                  }
+                })
+              })
+            </script>
+        </div>
+    </div>
+    <div class="container" style="padding-top:20px;">
+        <h3>Predicted Price trend:</h3>
+        {% if result>=0 %}
+        <div style="border:solid; border-radius:10px; border-color:rgba(0, 255, 0, 1); background-color:rgba(0, 225, 0, 0.15); font-weight:bold;">
+            <p id="stonks" style="padding-left:10px;">Increase: +{{ result }}%</p>
+            <img src="/static/Images/Uptrend.png" height="50" style="padding-left:10px;"></h1>
+        </div>
+        {% else %}
+        <div style="border:solid; border-radius:10px; border-color:rgba(255, 0, 0, 1); background-color:rgba(225, 0, 0, 0.15); font-weight:bold">
+            <p id="stonks" style="padding-left:10px;">Decrease: {{ result }}%</p>
+            <img src="/static/Images/Downtrend.png" height="50" style="padding-left:10px;"></h1>
+        </div>
+        {% endif %}
+    </div>
 </div>
+
+<div class="dropdown-divider m-3" style="height: 3px; "></div>
+<div class="container-fluid text-light">
+    <div class="row m-5">
+        <h4 class="col-9">Related News</h4>
+        <a href="../viewNews" class="col-3 btn btn-outline-light">Our News Sentiment Prediction</a>
+    </div>
+    <div class="row m-3">
+        {%for result in news_result[0:3] %}
+        <div class="col-4 mb-5" style="height: 350px;">
+            <div class="border-light border rounded mx-3 p-4 " style="width: inherit;height: inherit;">
+                <form target="_blank" action={{  result[3] }}>
+                    <button type="submit" class="btn btn-outline-light float-right">View More</button>
+                </form>
+                <p style="height:45px;">{{ result[4][8:10] }} {{ result[4][5:7]|month_name }}&nbsp&nbsp {{ result[4]|timeAgo }} ago</p>
+                <h4 style="height: 60px;overflow-x: auto;overflow-y: auto;">{{ result[1] }}</h4>
+                <p class="my-4" style="height: 120px;overflow-y: auto;">{{ result[5] }}</p>
+            </div>
+        </div>
+        {%endfor%}
+    </div>
+</div>
+
 {% endblock %}

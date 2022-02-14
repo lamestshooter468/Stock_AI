@@ -1,8 +1,11 @@
 import datetime
+
+import flask
 from importlib_metadata import metadata
 from multiprocessing import connection
 from time import strftime
 from flask import Flask, jsonify, render_template, redirect, url_for, request, session
+from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from newsapi.newsapi_client import NewsApiClient
 from dateutil.relativedelta import relativedelta
@@ -26,6 +29,7 @@ import models.loadmodels as loadmodels
 import config
 
 app = Flask(__name__)
+CORS(app)
 engine = db.create_engine('mysql://admin:eu866WCm6ipb@112.199.252.164:3306/ai_project')
 connection = engine.connect()
 metadata = db.MetaData()
@@ -222,15 +226,21 @@ def background_process_test():
 
 # ------------------Stock---------------------
 
-@app.route('/viewStock', methods=["GET"])
+@app.route('/viewStock', methods=["GET", "POST"])
 def viewStock():
+    day = 5
+    try:
+        day = request.json["days"]
+    except:
+        None
     results = connection.execute(db.select([stock_table])).fetchall()
+    news_result = connection.execute(db.select([news_table])).fetchall()
 
     # scaler = MinMaxScaler(feature_range=(0, 1)
     # scaled_data = scaler.fit_transform([result[1] for result in results].reshape(-1, 1))
 
     labels = [str(result[0]) for result in results]
-    labels = labels + [str(datetime.strftime((datetime.today() + relativedelta(days=i)), '%Y-%m-%d')) for i in range(0, 5)]
+    labels = labels + [str(datetime.strftime((datetime.today() + relativedelta(days=i)), '%Y-%m-%d')) for i in range(0, day)]
 
     model = loadmodels.load_arima()
 
@@ -240,7 +250,7 @@ def viewStock():
     test = np.array(test)
     preds = []
 
-    for i in range(5):
+    for i in range(day):
         t_forecast = []
         t_forecast.append(model.predict(n_periods=len([test[0][i:i + 5]]), X=[test[0][i:i + 5]]))
         t_forecast = np.array(t_forecast)
@@ -248,14 +258,23 @@ def viewStock():
         preds.append(t_forecast[0])
     # preds = scaler.inverse_transform(preds)
     # preds = scaler.inverse_transform(test)
-    results = connection.execute(db.select([stock_table])).fetchall()
-    return render_template('viewStock.html', values=test, max=200, labels=labels)
+
+    result = round((test[0][-1] - test[0][4]) / test[0][4], 3)
+    if request.method == "POST":
+        data = {"values": test.tolist(), "labels": labels, "result": result}
+        data = flask.jsonify(data)
+        data.headers.add("Access-Control-Allow-Origin", '*')
+        return data
+
+    return render_template('viewStock.html', values=test.tolist(), max=200, labels=labels, result=result, news_result=news_result)
 
 
 
 @app.route('/viewLSTM', methods=["GET"])
 def viewLSTM():
     results = connection.execute(db.select([stock_table])).fetchall()
+    news_result = connection.execute(db.select([news_table])).fetchall()
+
     model = loadmodels.LSTMModel()
 
     labels = [str(result[0]) for result in results]
@@ -268,7 +287,6 @@ def viewLSTM():
     test = [result for result in scaled_data]
     test=np.array(test)
     #print(test)
-    #[[0.71482802], [0.71745348], [0.66760452], [0.66274593], [0.61612082]]
     
     preds = []
 
@@ -287,8 +305,10 @@ def viewLSTM():
         preds.append(t_forecast[0])
     # y_te = scaler.inverse_transform(y_te)
     test = scaler.inverse_transform(test)
-    print(test)
-    return render_template("viewLSTM.html", values=test, max=200, labels=labels)
+    test = test.tolist()
+    result = round((test[-1][0] - test[4][0]) / test[4][0], 3)
+
+    return render_template("viewLSTM.html", values=test, max=200, labels=labels, result=result, news_result=news_result)
 
 
 @app.route('/viewFlairNews')
