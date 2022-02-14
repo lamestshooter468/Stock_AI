@@ -57,7 +57,7 @@ def predictAPI():
     return predict(data["text"])
 
 if __name__ == '__main__':
-    app.run(debug = False, port=3000)
+    app.run(host='0.0.0.0',debug = False, port=3000)
 
 
 

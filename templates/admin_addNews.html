@@ -14,17 +14,51 @@
 
 <div class="container news-container border-active border-solid border-height">
     <div class="text-center">
+      <label class="text-light" for="lbl_fromdate">From Date:</label>
+      <input type="date" id="fromdate" class="form-control" placeholder="From Date: dd/mm/yy">
+      <label class="text-light" for="lbl_todate">To Date:</label>
+      <input type="date" id="todate" class="form-control" placeholder="To Date: dd/mm/yy">
+      <label class="text-light" for="lbl_query">Query:</label>
+      <input type="text" id="query" class="form-control" placeholder="Query:">
+      <br>
     <button class="btn_clear" type="submit"><h3 class="text-light text-center">Add News And Predict Sentiment</h3></button>
+    <h4 class="text-light" id="lbl_noti" ></h4>
 </div>
 </div>
 </form>
 <script type=text/javascript>
     $(function() {
+      
+    
+   
       $('.btn_clear').on('click', function(e) {
         e.preventDefault();
-        $.ajax('/background_process_test', function(data) {
-          //do nothing
-        });
+        alert(document.getElementById("query").value);
+        var data = {
+        "fromdate": document.getElementById("fromdate").value,
+        "todate": document.getElementById("todate").value,
+        "query": document.getElementById("query").value
+        
+    };
+        console.log(data);
+       
+        
+
+
+        jQuery.ajax({
+        type: 'POST',
+        url: 'http://cyronix.asuscomm.com:5000/background_process_test',
+        data: JSON.stringify(data),
+        contentType: 'application/json',
+        success: function(data) {
+            
+          document.getElementById("lbl_noti").innerText = "Success !";
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+          document.getElementById("lbl_noti").innerText = "Error Orcurred";
+        }
+    })
+        
         return false;
       });
     });

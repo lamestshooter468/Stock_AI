@@ -158,7 +158,7 @@ def timeAgo(datetimestring):
 # ------------------API reqs---------------------
 
 # background process happening without any refreshing
-@app.route('/background_process_test')
+@app.route('/background_process_test' , methods=['POST', 'GET'])
 def background_process_test():
     # Init
     newsapi = NewsApiClient(api_key='4d0eb542e2ca44a9af95172bad7d0221')
@@ -168,6 +168,7 @@ def background_process_test():
     today_date = datetime.today().strftime('%Y-%m-%d')
     five_days = datetime.today() + relativedelta(days=-4)
     three_months = datetime.today() + relativedelta(months=-1)
+    
     stock_data = web.DataReader(f'{crypto_currency}-{against_currency}', "yahoo", five_days, today_date)
 
     for i in range(len(stock_data)):
@@ -178,9 +179,13 @@ def background_process_test():
         ResultProxy = connection.execute(query, values_list)
 
     for page in range(1, 2):
-        all_articles = newsapi.get_everything(q='bitcoin',
-                                              from_param=three_months,
-                                              to=today_date,
+        print(today_date)
+        fromdate = request.json['fromdate']
+        todate = request.json['todate']
+        query = request.json['query']
+        all_articles = newsapi.get_everything(q=query,
+                                              from_param=fromdate,
+                                              to=todate,
                                               language='en',
                                               sort_by='relevancy',
                                               page=page)
