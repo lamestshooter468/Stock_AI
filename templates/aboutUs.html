@@ -12,7 +12,7 @@
 
 
 <div class="row m-5 p-4 text-light">
-    <div class="col-12 px-0" style="height: 230px;">
+    <div class="col-12 px-0">
         <div class="border-light border p-4" style="width: inherit;height: inherit;">
             <div class="container p-3">
                 <h4>Our Project</h4>
@@ -24,7 +24,7 @@
             </div>
         </div>
     </div>
-    <div class="col-8 px-0" style="height: 370px;">
+    <div class="col-8 px-0">
         <div class="border-light border p-4" style="width: inherit;height: inherit;">
             <div class="container p-3">
                 <h4>Facts</h4>
@@ -32,27 +32,27 @@
                 <br><br>While some investments respond positively to inflation, many do not.
                 <br><br>These investments can prepare you well for today's environment.
                 <br><br>The annual inflation rate hovered below 2.5% for the entire 2010s, but it increased to over 5% in summer 2021 is likely here to stay.  Average costs are rising significantly for the first time in many people's investing careers, and some investments will respond better than others. 
-                <br><br>By using these model, you will be ready for continued inflation throughout the 2021s.
+                <br><br>By using these model, you will be ready for continued inflation throughout the 2022s.
                 </p>
                 
             </div> 
         </div>
     </div>
-    <div class="col-4 px-0" style="height: 370px;">
-        <div class="border-light border p-4" style="width: inherit;height: inherit;">
-            <div class="container p-3">
+    <div class="col-4 px-0 border-light border p-4">
+        <div style="width: inherit;height: inherit;">
+            <form class="container p-3" action="/aboutUs/submitForm" method="post">
                 <h4>Feedback For Us</h4>
                 <div class="form-group">
                     <label for="feedbackHeading">Heading</label>
-                    <input type="text" class="form-control" id="feedbackHeading" placeholder="Enter Feedback Heading">
+                    <input required type="text" class="form-control" id="feedbackHeading" name="feedbackHeading" placeholder="Enter Feedback Heading">
                 </div>
                 <div class="form-group">
                     <label for="feedbackComment">Comment</label>
-                    <textarea class="form-control" id="feedbackComment" aria-describedby="feedbackHelp" placeholder="Enter Feedback"></textarea>
+                    <textarea required class="form-control" id="feedbackComment" name="feedbackComment" aria-describedby="feedbackHelp" placeholder="Enter Feedback"></textarea>
                     <small id="feedbackHelp" class="form-text text-muted">We'll never share your Feedback with anyone else.</small>
                 </div>
-                <button class="btn btn-danger" style="width: 100%;">Submit</button>
-            </div> 
+                <button class="btn btn-danger" type="submit" style="width: 100%;">Submit</button>
+            </form> 
         </div>
     </div>
 </div>

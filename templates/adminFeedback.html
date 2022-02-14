@@ -1,0 +1,45 @@
+{% extends "adminMain.html" %}
+{% set active_page = "Admin Feedback" %}
+
+{% block title %}Admin Feedback{% endblock %}
+
+{% block content %}
+<!-- Put your html codes here! -->
+
+<div class="p-3 mr-3 text-light float-right">
+    <form action="/feedback/clearall" method="post">
+        <button type="submit" class="btn btn-light">Clear All</button>
+    </form>
+</div>
+<div class="container p-3 my-5 text-light">
+    <h1>Feedback</h1>
+</div>
+{% if feedbackdb %}
+<div class="p-3">
+    <table class="table table-striped table-dark">
+        <thead>
+            <tr>
+            <th scope="col">#</th>
+            <th scope="col">Heading</th>
+            <th scope="col">Comment</th>
+            <th scope="col">Feedback Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {%for feedback in feedbackdb %}
+            <tr>
+            <th scope="row">{{loop.index}}</th>
+            <td>{{ feedback["feedbackHeading"] }}</td>
+            <td>{{ feedback["feedbackComment"] }}</td>
+            <td>{{ feedback["utctime"].split('00:00')[0]|timeAgo }} ago</td>
+            </tr>
+            {%endfor%}
+        </tbody>
+    </table>
+</div>
+
+
+{% else %}
+<h3 class="container p-3 my-5">No Feedback in database</h3>
+{% endif %}
+{% endblock %}

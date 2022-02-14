@@ -1,6 +1,5 @@
 import datetime
-
-import flask
+from urllib import response
 from importlib_metadata import metadata
 from multiprocessing import connection
 from time import strftime
@@ -61,11 +60,12 @@ def viewNews():
     try:
         db = shelve.open('articles.db', "r")
         articles = db["articles"]
+        articlesRelevancy = db["articlesRelevancy"]
         db.close()
     except:
         articles = {}
-    return render_template('viewNews.html', articles=articles)
-
+        articlesRelevancy = {}
+    return render_template('viewNews.html',articles=articles, articlesRelevancy=articlesRelevancy)
 
 # -----------------admin----------------
 api_key = os.getenv("NEWS_API")
@@ -103,10 +103,12 @@ def adminNews():
         try:
             db = shelve.open('articles.db', "r")
             articles = db["articles"]
+            articlesRelevancy = db["articlesRelevancy"]
             db.close()
         except:
             articles = {}
-        return render_template('adminNews.html', articles=articles)
+            articlesRelevancy = {}
+        return render_template('adminNews.html',articles=articles, articlesRelevancy=articlesRelevancy)
     else:
         return redirect(url_for('adminLogin'))
 
@@ -134,6 +136,25 @@ def adminRefreshNews():
         db["articles"] = articles
         db.close()
 
+        btc_articlesByRelevany = newsapi.get_everything(q='bitcoin',
+                                        language='en',
+                                        sort_by='relevancy',
+                                        page=1)
+        articlesByRelevany = btc_articlesByRelevany["articles"]
+        for article in articlesByRelevany:
+            del article["author"]
+            del article["description"]
+            del article["source"]
+            del article["urlToImage"]
+            text = requests.post("http://127.0.0.1:3000/predict", json = {"text": article["title"]}).text.replace("'",'"')
+            data = json.loads(text)
+            predictedImpact = data["predicted"] + " (Confidence: "+ "{:.2f}".format((data["confidence"]*100)) + "%)"
+            article["predictedImpact"] = predictedImpact
+
+        db = shelve.open('articles.db', "c")
+        db["articlesRelevancy"] = articlesByRelevany
+        db.close()
+
         return redirect(url_for('adminNews'))
     else:
         return redirect(url_for('adminLogin'))
@@ -142,6 +163,50 @@ def adminRefreshNews():
 def admin_addNews():
     return render_template('admin_addNews.html')
 
+
+#---------------------------Feedback----------------------------
+@app.route('/aboutUs/submitForm', methods=["POST"])
+def submitFeedback():
+    try:
+        db = shelve.open('feedback.db', "r")
+        feedbackdb = db["feedback"]
+        db.close()
+    except:
+        feedbackdb = []
+    feedback = {}
+    feedback["feedbackHeading"] = request.form["feedbackHeading"]
+    feedback["feedbackComment"] = request.form["feedbackComment"]
+    feedback["utctime"] = str(datetime.now(timezone.utc).replace(microsecond=0).isoformat())
+    feedbackdb.append(feedback)
+    db = shelve.open('feedback.db', "c")
+    db["feedback"] = feedbackdb
+    db.close()
+
+    return redirect(url_for('aboutUs'))
+
+@app.route('/admin/feedback', methods=["GET"])
+def adminFeedback():
+    if session.get("admin"):
+        try:
+            db = shelve.open('feedback.db', "r")
+            feedbackdb = db["feedback"]
+            db.close()
+        except:
+            feedbackdb = []
+        return render_template('adminFeedback.html',feedbackdb=feedbackdb)
+    else:
+        return redirect(url_for('adminLogin'))
+
+@app.route('/feedback/clearall', methods=["POST"])
+def feedbackClearall():
+    if session.get("admin"):
+        db = shelve.open('feedback.db', "c")
+        db["feedback"] = []
+        db.close()
+
+        return redirect(url_for('adminFeedback'))
+    else:
+        return redirect(url_for('adminLogin'))
 
 # -------------------------template_filter----------------------
 @app.template_filter()
@@ -262,7 +327,7 @@ def viewStock():
     result = round((test[0][-1] - test[0][4]) / test[0][4], 3)
     if request.method == "POST":
         data = {"values": test.tolist(), "labels": labels, "result": result}
-        data = flask.jsonify(data)
+        data = jsonify(data)
         data.headers.add("Access-Control-Allow-Origin", '*')
         return data
 
