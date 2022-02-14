@@ -36,7 +36,7 @@
 </div>
 <div class="row m-5 text-light" id="articlesByDate">
     {%for article in articles %}
-    <div class="col-4 mb-5" style="height: 400px;">
+    <div class="col-lg-4 col-md-6 mb-5 col-sm-12" style="height: 400px;">
         <div class="border-light border rounded mx-3 p-4" style="width: inherit;height: inherit;">
             <form target="_blank" action={{  article["url"] }}>
                 <button type="submit" class="btn btn-outline-light float-right">View More</button>
@@ -52,7 +52,7 @@
 </div>
 <div class="row m-5 text-light" id="articlesByRelevancy" style="display: none;">
     {%for article in articlesRelevancy %}
-    <div class="col-4 mb-5" style="height: 400px;">
+    <div class="col-lg-4 col-md-6 mb-5 col-sm-12" style="height: 400px;">
         <div class="border-light border rounded mx-3 p-4" style="width: inherit;height: inherit;">
             <form target="_blank" action={{  article["url"] }}>
                 <button type="submit" class="btn btn-outline-light float-right">View More</button>
